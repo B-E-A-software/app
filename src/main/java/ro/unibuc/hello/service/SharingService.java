@@ -22,9 +22,6 @@ public class SharingService {
     private final UserService userService;
 
     @Autowired
-    private final UserRepository userRepository;
-
-    @Autowired
     private final RequestRepository requestRepository;
 
     @Autowired

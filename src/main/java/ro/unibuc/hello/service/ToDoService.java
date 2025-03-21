@@ -6,13 +6,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
-import main.java.ro.unibuc.hello.service.SharingService;
+import ro.unibuc.hello.service.SharingService;
 import ro.unibuc.hello.data.*;
 import ro.unibuc.hello.dto.request.*;
 import ro.unibuc.hello.dto.request.ToDoListDto;
 import ro.unibuc.hello.dto.response.*;
 import ro.unibuc.hello.exception.EntityNotFoundException;
-import ro.unibuc.hello.service.SharingService;
+
 
 @AllArgsConstructor
 @Service
