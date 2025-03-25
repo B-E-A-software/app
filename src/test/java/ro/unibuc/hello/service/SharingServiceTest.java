@@ -1,5 +1,8 @@
 package ro.unibuc.hello.service;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -146,6 +149,27 @@ public class SharingServiceTest {
         assertFalse(result);
         verify(requestRepository, never()).delete(any(RequestEntity.class));
     }
-    
+
+    @Test
+    void testAcceptRequest_failure(){
+        when(requestRepository.findByUsernameAndToDoList(any(),any())).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class,()->sharingService.acceptRequest(new RequestDto()));
+    }
+
+    @Test
+    void testAcceptRequest_throwsException(){
+        when(requestRepository.findByUsernameAndToDoList(any(),any())).thenThrow(new RuntimeException());
+        assertThrows(EntityNotFoundException.class,()->sharingService.acceptRequest(new RequestDto()));
+    }
+
+    @Test
+    void denyRequest_ShouldReturnFalse_WhenExceptionOccurs() {
+        when(requestRepository.findByUsernameAndToDoList(anyString(), anyString()))
+                .thenThrow(new RuntimeException("Database error"));
+
+        boolean result = sharingService.denyRequest(new RequestDto());
+
+        assertFalse(result, "Expected denyRequest to return false when an exception occurs");
+    }
     
 }
