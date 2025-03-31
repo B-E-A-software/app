@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import ro.unibuc.hello.dto.request.LoginDto;
 import ro.unibuc.hello.dto.request.RegisterDto;
 import ro.unibuc.hello.dto.response.AuthDto;
