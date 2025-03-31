@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import ro.unibuc.hello.exception.EntityNotFoundException;
+import org.springframework.security.core.Authentication;
 import ro.unibuc.hello.data.Role;
 import ro.unibuc.hello.data.UserEntity;
 import ro.unibuc.hello.data.UserRepository;
@@ -77,6 +78,12 @@ public class AuthService {
         var user = checkLoginDetails(loginDto);
         authenticate(loginDto);
         String token = jwtService.generateJwt(user);
+
+   
+    Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+
         return AuthDto.builder()
                 .username(loginDto.getUsername())
                 .email(user.getEmail())

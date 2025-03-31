@@ -20,19 +20,19 @@ public class RequestEntity {
     private String username;
     private String toDoList;
 
-    private String text; 
+    private String description; 
 
-    public RequestEntity(String user, String toDoList, String text) {
+    public RequestEntity(String user, String toDoList, String description) {
         this.id = user + toDoList;
         this.username = user;
         this.toDoList = toDoList;
-        this.text = text;
+        this.description = description;
     }
 
     @Override
     public String toString() {
         return String.format(
-                "RequestEntity[user='%s', toDoList='%s', text='%s']",
-                username, toDoList, text);
+                "RequestEntity[user='%s', toDoList='%s', description='%s']",
+                username, toDoList, description);
     }
 }

@@ -117,6 +117,23 @@ public class ToDoService {
             throw new EntityNotFoundException("todolist");
         }
     }
+
+    public ToDoListResponseDto createToDoListUser(ToDoListResponseDto ToDoListResponseDto, String username) {
+        try
+        {
+            var toDoList = modelMapper.map(ToDoListResponseDto, ToDoListEntity.class);
+            toDoListRepository.save(toDoList);
+            sharingService.createBind(username, toDoList.getName(), true);
+            return modelMapper.map(toDoList, ToDoListResponseDto.class);
+        }
+        catch (Exception exception)
+        {
+            throw new EntityNotFoundException("todolist");
+        }
+    }
+
+
+
     public ToDoListResponseDto updateToDoList(ToDoListResponseDto ToDoListResponseDto, String toDoListName) {
         ToDoListEntity toDoListEntity = toDoListRepository.findByName(toDoListName);
         try
@@ -167,7 +184,7 @@ public class ToDoService {
             requestRepository.findAll().
             stream().
             filter(request -> request.getToDoList() == name).
-            map(request -> new RequestResponseDto(request.getUsername(), request.getToDoList(), request.getText())).
+            map(request -> new RequestResponseDto(request.getUsername(), request.getToDoList(), request.getDescription())).
             toList()
         );
     }

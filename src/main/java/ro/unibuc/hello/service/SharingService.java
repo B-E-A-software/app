@@ -88,6 +88,11 @@ public class SharingService {
         try {
            
             Optional<RequestEntity> requestOpt = requestRepository.findByUsernameAndToDoList(requestDto.getUsername(), requestDto.getToDoList());
+
+            if(requestOpt.isEmpty())
+            {
+                throw new EntityNotFoundException(404);
+            }
             
             if (requestOpt.isPresent()) {
                 
@@ -102,7 +107,7 @@ public class SharingService {
         } catch (Exception exception) {
            
             System.out.println("Error accepting request: " + exception.getMessage());
-            throw new EntityNotFoundException("request"); 
+            throw exception; 
         }
     }
 

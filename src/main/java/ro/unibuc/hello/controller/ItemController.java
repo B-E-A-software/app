@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import ro.unibuc.hello.dto.request.ItemDto;
 import ro.unibuc.hello.dto.response.ItemResponseDto;
 import ro.unibuc.hello.service.*;
-import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/item")
