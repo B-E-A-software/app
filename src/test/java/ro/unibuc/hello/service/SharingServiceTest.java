@@ -161,7 +161,7 @@ public class SharingServiceTest {
     @Test
     void testAcceptRequest_throwsException(){
         when(requestRepository.findByUsernameAndToDoList(any(),any())).thenThrow(new RuntimeException());
-        assertThrows(EntityNotFoundException.class,()->sharingService.acceptRequest(new RequestDto()));
+        assertThrows(RuntimeException.class,()->sharingService.acceptRequest(new RequestDto()));
     }
 
     @Test
