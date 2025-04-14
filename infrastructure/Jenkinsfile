@@ -6,6 +6,7 @@ pipeline {
  environment {
         DOCKER_PASSWORD = credentials("docker_password")
         GITHUB_TOKEN = credentials("github_token")
+        GITHUB_ORG_NAME = "B-E-A-software"
     }
 
     stages {
@@ -36,9 +37,10 @@ pipeline {
             env.PATCH_VERSION = sh([script: 'git tag | sort --version-sort | tail -1 | cut -d . -f 3', returnStdout: true]).trim()
             env.IMAGE_TAG = "${env.MAJOR_VERSION}.\$((${env.MINOR_VERSION} + 1)).${env.PATCH_VERSION}"
         }
-        sh "docker build -t <username>/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
+        
         sh "git tag ${env.IMAGE_TAG}"
-        sh "git push https://$GITHUB_TOKEN@github.com/${DOCKER_PASSWORD_USR}/app.git ${env.IMAGE_TAG}"
+        sh "git push https://${GITHUB_TOKEN}@github.com/${GITHUB_ORG_NAME}/app.git ${env.IMAGE_TAG}"
+        sh "docker build -t ${DOCKER_PASSWORD_USR}/hello-img:${MAJOR_VERSION}.\$((${MINOR_VERSION} + 1)).${PATCH_VERSION} ."
       }
 
     }
