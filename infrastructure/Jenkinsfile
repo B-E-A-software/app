@@ -9,6 +9,19 @@ pipeline {
     }
 
     stages {
+        stage('Pre-cleanup') {
+            steps {
+                script {
+                    def containers = sh(script: "docker ps --filter 'name=hello' --filter 'name=mongo' --format '{{.ID}}'", returnStdout: true).trim()
+                    if (containers) {
+                        sh "echo 'Stopping containers:'; echo ${containers}"
+                        sh "echo '${containers}' | xargs docker kill"
+                    } else {
+                        echo "No containers to stop."
+                    }
+                }
+            }
+        }
         stage('Build & Test') {
             steps {
                 sh './gradlew clean build'
@@ -27,7 +40,13 @@ pipeline {
         sh "git tag ${env.IMAGE_TAG}"
         sh "git push https://$GITHUB_TOKEN@github.com/${DOCKER_PASSWORD_USR}/service.git ${env.IMAGE_TAG}"
       }
-}
+
+    }
+        stage('Docker-compose'){
+        steps{
+            sh "IMAGE_TAG=${env.IMAGE_TAG} docker compose up -d hello mongo"
+        }
+      }
     }
 
     
