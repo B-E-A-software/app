@@ -12,16 +12,19 @@ pipeline {
     stages {
         stage('Pre-cleanup') {
             steps {
-                script {
-                    def containers = sh(script: "docker ps --filter 'name=hello' --filter 'name=mongo' --format '{{.ID}}'", returnStdout: true).trim()
-                    if (containers) {
-                        sh "echo 'Stopping containers:'; echo ${containers}"
-                        sh "echo '${containers}' | xargs docker kill"
-                    } else {
-                        echo "No containers to stop."
-                    }
+        script {
+            def containers = sh(script: "docker ps --filter 'name=hello' --filter 'name=mongo' --format '{{.ID}}'", returnStdout: true).trim()
+            if (containers) {
+                echo "Stopping containers:\n${containers}"
+                // Split into array and kill one by one
+                containers.split().each { id ->
+                    sh "docker kill ${id}"
                 }
+            } else {
+                echo "No containers to stop."
             }
+        }
+    }
         }
         stage('Build & Test') {
             steps {
