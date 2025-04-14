@@ -25,7 +25,7 @@ pipeline {
         }
         stage('Build & Test') {
             steps {
-                sh './gradlew clean build'
+                sh './gradlew clean test testIT build '
             }
         }
         stage('Tag image') {
