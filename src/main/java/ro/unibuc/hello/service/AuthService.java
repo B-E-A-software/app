@@ -7,6 +7,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 import ro.unibuc.hello.exception.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -21,16 +24,92 @@ import ro.unibuc.hello.exception.EntityAlreadyExistsException;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private ModelMapper modelMapper;
+    
+    private final UserRepository userRepository;
+    
+    private final PasswordEncoder passwordEncoder;
+    
+    private final JwtService jwtService;
+    
+    private final AuthenticationManager authenticationManager;
+    
+    private final ModelMapper modelMapper;
+
+    private final MeterRegistry meterRegistry;
+
+    // METRICS
+    private Counter registerCounter;
+    private Counter loginCounter;
+    private Counter registerFailureCounter;
+    private Counter loginFailureCounter;
+    private Counter logoutCounter;
+    private Timer authenticationTimer;
+
+    public AuthService(UserRepository userRepository,
+                   PasswordEncoder passwordEncoder,
+                   JwtService jwtService,
+                   AuthenticationManager authenticationManager,
+                   ModelMapper modelMapper,
+                   MeterRegistry meterRegistry) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.jwtService = jwtService;
+    this.authenticationManager = authenticationManager;
+    this.modelMapper = modelMapper;
+    this.meterRegistry = meterRegistry;
+
+    this.registerCounter = Counter.builder("auth_register_total")
+    .description("Total number of user registrations")
+    .register(meterRegistry);
+
+    this.registerFailureCounter = Counter.builder("auth_register_failure_total")
+        .description("Total number of failed register attempts")
+        .register(meterRegistry);
+
+    this.loginCounter = Counter.builder("auth_login_success_total")
+        .description("Total number of successful logins")
+        .register(meterRegistry);
+
+    this.loginFailureCounter = Counter.builder("auth_login_failure_total")
+        .description("Total number of failed login attempts")
+        .register(meterRegistry);
+
+    this.logoutCounter = Counter.builder("auth_logout_total")
+        .description("Total number of logouts")
+        .register(meterRegistry);
+
+    this.authenticationTimer = Timer.builder("auth_authentication_duration_seconds")
+        .description("Time taken to authenticate users")
+        .register(meterRegistry);
+    }
+
+
+
+    private void initMetrics() {
+        this.registerCounter = Counter.builder("auth_register_total")
+            .description("Total number of user registrations")
+            .register(meterRegistry);
+
+        this.registerFailureCounter = Counter.builder("auth_register_failure_total")
+            .description("Total number of failed register attempts")
+            .register(meterRegistry);
+
+        this.loginCounter = Counter.builder("auth_login_success_total")
+            .description("Total number of successful logins")
+            .register(meterRegistry);
+
+        this.loginFailureCounter = Counter.builder("auth_login_failure_total")
+            .description("Total number of failed login attempts")
+            .register(meterRegistry);
+
+        this.logoutCounter = Counter.builder("auth_logout_total")
+            .description("Total number of logouts")
+            .register(meterRegistry);
+
+        this.authenticationTimer = Timer.builder("auth_authentication_duration_seconds")
+            .description("Time taken to authenticate users")
+            .register(meterRegistry);
+    }
 
     public UserEntity loadUser(String username) {
         return userRepository.findByUsername(username)
@@ -39,7 +118,8 @@ public class AuthService {
 
     public AuthDto register(RegisterDto registerDto){
         userRepository.findByUsername(registerDto.getUsername())
-                .ifPresent(user -> { throw new EntityAlreadyExistsException(); });
+                .ifPresent(user -> {registerFailureCounter.increment();
+                     throw new EntityAlreadyExistsException(); });
         
         var user = modelMapper.map(registerDto, UserEntity.class);
         
@@ -47,6 +127,8 @@ public class AuthService {
         user.setRole(Role.USER);
         String token = jwtService.generateJwt(user);
         userRepository.save(user);
+
+        registerCounter.increment();
 
         return AuthDto.builder()
                     .username(registerDto.getUsername())
@@ -59,6 +141,7 @@ public class AuthService {
     private UserEntity checkLoginDetails(LoginDto loginDto){
         var user = loadUser(loginDto.getUsername());
         if(!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+            loginFailureCounter.increment();
             throw new EntityNotFoundException("user");
         }
         return user;
@@ -84,6 +167,8 @@ public class AuthService {
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        loginCounter.increment();
+
         return AuthDto.builder()
                 .username(loginDto.getUsername())
                 .email(user.getEmail())
@@ -94,5 +179,6 @@ public class AuthService {
 
     public void logout(){
         SecurityContextHolder.clearContext();
+        logoutCounter.increment();
     }
 }

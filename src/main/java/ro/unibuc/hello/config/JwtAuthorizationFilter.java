@@ -32,12 +32,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
+        if (request.getServletPath().contains("/auth") || request.getServletPath().contains("/generation") || request.getServletPath().contains("/actuator")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+    
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            if (!request.getServletPath().contains("auth") && !request.getServletPath().contains("generation")) {
-                response.setStatus(401);
-            } else {
-                filterChain.doFilter(request, response);
-            }
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 

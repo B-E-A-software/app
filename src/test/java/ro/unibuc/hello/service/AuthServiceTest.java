@@ -11,6 +11,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import ro.unibuc.hello.data.Role;
 import ro.unibuc.hello.data.UserEntity;
@@ -40,8 +42,9 @@ public class AuthServiceTest {
     private AuthenticationManager authenticationManager;
     @Mock
     private ModelMapper modelMapper;
-    @InjectMocks
     private AuthService authService;
+    
+    private MeterRegistry meterRegistry;
 
     private UserEntity user;
     private RegisterDto registerDto;
@@ -49,6 +52,17 @@ public class AuthServiceTest {
 
     @BeforeEach
     void beforeEach(){
+        
+        meterRegistry = new SimpleMeterRegistry();
+
+        authService = new AuthService(
+            userRepository,
+            passwordEncoder,
+            jwtService,
+            authenticationManager,
+            modelMapper,
+            meterRegistry
+        );
         SecurityContextHolder.clearContext();
         user = UserEntity.builder()
                 .username("user")
