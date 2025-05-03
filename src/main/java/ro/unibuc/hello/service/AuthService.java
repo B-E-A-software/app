@@ -10,9 +10,12 @@ import org.springframework.stereotype.Service;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Gauge;
 
 import ro.unibuc.hello.exception.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
+
+import ro.unibuc.hello.config.AvailabilityIndicator;
 import ro.unibuc.hello.data.Role;
 import ro.unibuc.hello.data.UserEntity;
 import ro.unibuc.hello.data.UserRepository;
@@ -37,6 +40,9 @@ public class AuthService {
     private final MeterRegistry meterRegistry;
 
     // METRICS
+    /** Availability: 1 = service up, 0 = service down */
+    private final Gauge serviceUpGauge;
+
     private Counter registerCounter;
     private Counter loginCounter;
     private Counter registerFailureCounter;
@@ -49,7 +55,8 @@ public class AuthService {
                    JwtService jwtService,
                    AuthenticationManager authenticationManager,
                    ModelMapper modelMapper,
-                   MeterRegistry meterRegistry) {
+                   MeterRegistry meterRegistry,
+                   AvailabilityIndicator indicator) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
@@ -80,6 +87,10 @@ public class AuthService {
     this.authenticationTimer = Timer.builder("auth_authentication_duration_seconds")
         .description("Time taken to authenticate users")
         .register(meterRegistry);
+
+    this.serviceUpGauge=Gauge.builder("auth_service_availability", indicator, AvailabilityIndicator::getUp)
+        .description("AuthService is up (1) or down (0)")
+        .register(meterRegistry);
     }
 
 
@@ -108,6 +119,7 @@ public class AuthService {
         this.authenticationTimer = Timer.builder("auth_authentication_duration_seconds")
             .description("Time taken to authenticate users")
             .register(meterRegistry);
+        
     }
 
     public UserEntity loadUser(String username) {

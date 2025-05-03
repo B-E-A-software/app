@@ -18,3 +18,11 @@ groups:
         annotations:
           summary: Increased info retrieval rate {{ $labels.value}} {{ $value }}
           description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+      - alert: CRITICAL-AuthServiceDown
+        expr: auth_service_availability == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary:   "Authentication service is DOWN"
+          description: "The AuthService gauge has reported 0 (down) for more than 5 minutes. (real time is 1 minute for testing)"
