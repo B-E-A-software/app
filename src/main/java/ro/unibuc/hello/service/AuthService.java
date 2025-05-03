@@ -24,7 +24,6 @@ import ro.unibuc.hello.exception.EntityAlreadyExistsException;
 @Service
 public class AuthService {
 
-    
     private final UserRepository userRepository;
     
     private final PasswordEncoder passwordEncoder;
