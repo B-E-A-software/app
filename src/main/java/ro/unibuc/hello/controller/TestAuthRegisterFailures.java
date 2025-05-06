@@ -26,17 +26,4 @@ public class TestAuthRegisterFailures {
         }
         return ResponseEntity.ok().build();
     }
-
-    @PostMapping("/up")
-    public ResponseEntity<Void> markUp() {
-        try
-        {
-            Thread.sleep(5000);
-        }
-        catch (Exception exception)
-        {
-
-        }
-        return ResponseEntity.ok().build();
-    }
 }
