@@ -18,3 +18,30 @@ groups:
         annotations:
           summary: Increased info retrieval rate {{ $labels.value}} {{ $value }}
           description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+
+      - alert: CRITICAL-AuthServiceDown
+        expr: auth_service_availability == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary:   "Authentication service is DOWN"
+          description: "The AuthService gauge has reported 0 (down) for more than 5 minutes. (real time is 1 minute for testing)"
+
+      - alert: CRITICAL-HighAuthenticationDuration
+        expr: avg_over_time(auth_authentication_duration_seconds[5m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Authentication Duration"
+          description: "Authentication duration is above 5 seconds for the last 5 minutes"
+
+      - alert: CRITICAL-AuthRegisterFailures
+        expr: increase(auth_register_failure_total[5m]) > 1000
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High number of authentication register failures"
+          description: "More than 1000 authentication register failures detected in the last 5 minutes."

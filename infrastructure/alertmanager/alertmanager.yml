@@ -1,5 +1,11 @@
 global:
   resolve_timeout: 1m
+  smtp_smarthost: 'sandbox.smtp.mailtrap.io:587'
+  smtp_from: 'alertmanager@example.com'
+  smtp_auth_username: 'c6167e6260562a'
+  smtp_auth_password: '9de46057c795f8'
+  smtp_auth_identity: 'c6167e6260562a'
+  smtp_require_tls: true
 
 route:
   group_by: ['alertname']
@@ -12,8 +18,4 @@ receivers:
 - name: 'email'
   email_configs:
   - to: 'EMAIL@gmail.com'
-    from: 'EMAIL@gmail.com'
-    smarthost: smtp.gmail.com:587
-    auth_username: 'EMAIL@gmail.com'
-    auth_identity: 'EMAIL@gmail.com'
-    auth_password: 'GENERATE ONE FROM https://security.google.com/settings/security/apppasswords'
+    send_resolved: true
